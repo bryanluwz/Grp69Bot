@@ -160,7 +160,7 @@ function doPost(e) {
 
 	// Ask helping
 	else if (isCommandInText(HELP_COMMAND_PHRASE, text)) {
-		sendMessage(chat_id, "(●'◡'●) the owner have yets to prowide helps");
+		sendMessage(chat_id, HELP_MESSAGE);
 	}
 
 	// Jason gaying
