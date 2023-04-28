@@ -1,32 +1,6 @@
-// Bot Details
-const BOT_TOKEN = "nevergonnagiveyouup";
-const BOT_USERNAME = "Grp69Bot";
-
-// Commands
-const DECIDE_COMMAND_PHRASE = "/decide";
-const HELP_COMMAND_PHRASE = "/help";
-const FLIP_A_COIN_COMMAND_PHRASE = "/flip";
-const MEOW_COMMAND_PHRASE = "/meow";
-const WOOF_COMMAND_PHRASE = "/woof";
-const ARF_COMMAND_PHRASE = "/arf";
-const UWU_COMMAND_PHRASE = "/uwu";
-const GRAPEFRUIT_COMMAND_PHRASE = "/grapefruit";
-const IS_JASON_GAY_COMMAND_PHRASE = "/isJasonGay";
-
-// Audio URLS
-const GRAPEFRUIT_AUDIO_ID = "nevergonnagiveyouup";
-const GRAPEFRUIT_AUDIO_FILE_ID = "nevergonnagiveyouup";
-const UWU_AUDIO_ID = "nevergonnagiveyouup";
-const UWU_AUDIO_FILE_ID = "nevergonnagiveyouup";
-
-function test() {
-	// Test here
-}
-
 function setWebhook() {
 	var token = BOT_TOKEN;
-	var url = "https://script.google.com/macros/s/nevergonnagiveyouup/exec";
-	// var url = "https://script.google.com/macros/s/nevergonnagiveyouup/dev"
+	var url = `https://script.google.com/macros/s/${WEBHOOK_ID}/exec`;
 	var response = UrlFetchApp.fetch("https://api.telegram.org/bot" + token + "/setWebhook?url=" + url);
 	Logger.log(response.getContentText());
 }
@@ -34,14 +8,21 @@ function setWebhook() {
 function doPost(e) {
 	var data = JSON.parse(e.postData.contents);
 	var chat_id = data.message.chat.id;
+	var user_id = data.message["from"].id;
 	var message_id = data.message.message_id;
 	var text = data.message.text;
 
+	// Init / ping bot
 	if (text == '/start' || text == `@${BOT_USERNAME}`) {
 		sendMessage(chat_id, 'hewwo o(`•ω•)/ what you want');
+		return;
+	}
+	else {
+		text = text.replace(`@${BOT_USERNAME}`, '');
 	}
 
-	else if (text.includes(DECIDE_COMMAND_PHRASE)) {
+	// Decision making
+	if (isCommandInText(DECIDE_COMMAND_PHRASE, text)) {
 		text = text.replace(`@${BOT_USERNAME}`, '').replace(/\s+/g, ' ');
 		var optionsStartingIndex = text.indexOf(DECIDE_COMMAND_PHRASE) + DECIDE_COMMAND_PHRASE.length + 1;
 
@@ -60,23 +41,28 @@ function doPost(e) {
 			sendMessage(chat_id, "it's empty uwu");
 	}
 
-	else if (text.includes(FLIP_A_COIN_COMMAND_PHRASE)) {
+	// Coin flipping
+	else if (isCommandInText(FLIP_A_COIN_COMMAND_PHRASE, text)) {
 		sendMessage(chat_id, Math.random() < 0.5 ? "heads" : "tails");
 	}
 
-	else if (text.includes(MEOW_COMMAND_PHRASE)) {
+	// Cat meowing
+	else if (isCommandInText(MEOW_COMMAND_PHRASE, text)) {
 		sendMessage(chat_id, Math.random() < 0.95 ? "=^._.^= meow" : "=^._.^= nya~ ");
 	}
 
-	else if (text.includes(WOOF_COMMAND_PHRASE)) {
+	// Dog barking
+	else if (isCommandInText(WOOF_COMMAND_PHRASE, text)) {
 		sendMessage(chat_id, Math.random() < 0.95 ? "૮ • ﻌ • ა woof" : "૮ • ﻌ • ა borf");
 	}
 
-	else if (text.includes(ARF_COMMAND_PHRASE)) {
+	// Arf arfing
+	else if (isCommandInText(ARF_COMMAND_PHRASE, text)) {
 		sendMessage(chat_id, "(┛❍ᴥ❍)┛ arf arf arf arf arf arf");
 	}
 
-	else if (text.includes(UWU_COMMAND_PHRASE)) {
+	// Anon uwuing
+	else if (isCommandInText(UWU_COMMAND_PHRASE, text)) {
 		try {
 			var response = sendVoiceMessageByFileId(chat_id.toString(), UWU_AUDIO_FILE_ID);
 		} catch (e) {
@@ -84,7 +70,8 @@ function doPost(e) {
 		}
 	}
 
-	else if (text.includes(GRAPEFRUIT_COMMAND_PHRASE)) {
+	// Anon grapefruiting
+	else if (isCommandInText(GRAPEFRUIT_COMMAND_PHRASE, text)) {
 		try {
 			var response = sendVoiceMessageByFileId(chat_id.toString(), GRAPEFRUIT_AUDIO_FILE_ID);
 		} catch (e) {
@@ -92,73 +79,109 @@ function doPost(e) {
 		}
 	}
 
-	else if (text.includes(HELP_COMMAND_PHRASE)) {
-		sendMessage(chat_id, "sowwy i cants help you");
+	// Anon auughhhing
+	else if (isCommandInText(AUUGHHH_COMMAND_PHRASE, text)) {
+		try {
+			var response = sendVoiceMessageByFileId(chat_id.toString(), AUUGHHH_AUDIO_FILE_ID);
+		} catch (e) {
+			sendVoiceMessage(chat_id, AUUGHHH_AUDIO_ID);
+		}
 	}
 
-	else if (text.includes(IS_JASON_GAY_COMMAND_PHRASE)) {
-		var textArray = [
-			"i dont know man he looks kinda gay to me",
-			"yes",
-			"i diagnose jason with big gay",
-			"yes he is mega gay",
-			"sorry jason, but i must do what i must do...\n\n<b>JASON IS GAY</b>"
-		];
-		sendMessage(chat_id, textArray[randomInt(0, textArray.length)]);
+	// Bible versing
+	else if (isCommandInText(RANDOM_BIBLE_VERSE_COMMAND_PHRASE, text)) {
+		var response = UrlFetchApp.fetch("https://labs.bible.org/api/?passage=random&type=json");
+		var json = response.getContentText();
+		var data = JSON.parse(json);
+		var book = data[0].bookname;
+		var chapter = data[0].chapter;
+		var verse = data[0].verse;
+		var text = data[0].text;
+		var quote = book + " " + chapter + ":" + verse + " - " + text;
+		sendMessage(chat_id, quote);
+	}
+
+	// God praying
+	else if (isCommandInText(PRAY_COMMAND_PHRASE, text)) {
+		if (Math.random() < 0.7) {
+			sendMessage(chat_id, PRAY_TEXT_ARRAY[randomInt(0, PRAY_TEXT_ARRAY.length)]);
+		}
+		else {
+			try {
+				sendGifByFileId(chat_id.toString(), PRAY_GIF_ARRAY[randomInt(0, PRAY_GIF_ARRAY.length)]);
+			} catch (e) {
+				sendMessage(chat_id, "something went wrong :(");
+			}
+		}
+	}
+
+	// Group reminding
+	else if (isCommandInText(REMIND_COMMAND_PHRASE, text)) {
+		// This can be used for either group or single user, just record chat id in spreadsheet
+		var [datetime, reminder_text] = parseReminderTimeMessage(text);
+		if (datetime && reminder_text) {
+			var success = addRemindersToSpreadsheet(datetime, chat_id, reminder_text, REMINDER_SPREADSHEET_ID);
+			if (!success) {
+				sendMessage(chat_id, "o((  &gt;ω&lt;))o  somethin went wong");
+			} else {
+				sendMessage(chat_id, `Reminder set sucessfuwwy:\nTitle: ${reminder_text}\nDate: ${datetime}`);
+			}
+		}
+		else {
+			sendMessage(chat_id, "wopsies, be in this fowmat\n/remind YYYYMMDD HHmm (reminder text) or \n/remind ?d?h?m[either optional] (reminder text) ");
+		}
+	}
+
+	// Self reminding
+	else if (isCommandInText(REMIND_ME_COMMAND_PHRASE, text)) {
+		// If use this in a group, record user id, but if user not started yet, send alert message
+		var [datetime, reminder_text] = parseReminderTimeMessage(text);
+		if (datetime && reminder_text) {
+			var success = addRemindersToSpreadsheet(datetime, user_id, reminder_text, REMINDER_SPREADSHEET_ID);
+			if (!success) {
+				sendMessage(chat_id, "o((  &gt;ω&lt;))o  somethin went wong");
+			} else {
+				try {
+					sendMessage(user_id, `Reminder set sucessfuwwy:\nTitle: ${reminder_text}\nDate: ${datetime}`);
+				} catch (e) {
+					sendMessage(chat_id, "（⊙ｏ⊙） has you added me yets, you cants receive reminders from me if you didnt start mes?");
+				}
+			}
+		} else {
+			sendMessage(chat_id, "wopsies, be in this fowmat\n/remindme YYYYMMDD HHmm (reminder text) or \n/remindme ?d?h?m[either optional] (reminder text) ");
+		}
+	}
+
+	// Delete reminding
+	else if (isCommandInText(UNREMIND_ME_COMMAND_PHRASE, text)) {
+		var message = deleteReminder(REMINDER_SPREADSHEET_ID, chat_id, text);
+		sendMessage(chat_id, message);
+	}
+
+	// Ask helping
+	else if (isCommandInText(HELP_COMMAND_PHRASE, text)) {
+		sendMessage(chat_id, "(●'◡'●) the owner have yets to prowide helps");
+	}
+
+	// Jason gaying
+	else if (isCommandInText(IS_JASON_GAY_COMMAND_PHRASE, text)) {
+		sendMessage(chat_id, IS_JASON_GAY_TEXT_ARRAY[randomInt(0, IS_JASON_GAY_TEXT_ARRAY.length)]);
 	}
 }
 
-function randomInt(min, max) {
-	return Math.floor(Math.random() * (max - min) + min);
-}
+// Every minute triggering
+function remindUsers() {
+	var sheet = SpreadsheetApp.openById(REMINDER_SPREADSHEET_ID).getSheets()[0];
+	var data = sheet.getDataRange().getValues();
+	var now = new Date();
 
-function sendMessage(chat_id, text) {
-	var token = BOT_TOKEN;
-	var url = 'https://api.telegram.org/bot' + token + '/sendMessage';
-	var payload = {
-		'chat_id': chat_id,
-		'text': text,
-		'parse_mode': 'HTML'
-	};
-	var options = {
-		'method': 'post',
-		'contentType': 'application/json',
-		'payload': JSON.stringify(payload)
-	};
-	return UrlFetchApp.fetch(url, options);
-}
+	for (var i = 1; i < data.length; i++) {
+		if (now.getTime() > data[i][SPREADSHEET_INDEX.DATETIME]) {
+			var message = `Reminder: ${data[i][SPREADSHEET_INDEX.REMINDER_TEXT]}\n${data[i][SPREADSHEET_INDEX.DATETIME]}`;
+			sendMessage(data[i][SPREADSHEET_INDEX.CHAT_ID], message);
+			sheet.getRange(i + 1, SPREADSHEET_INDEX.DONE + 1).setValue(true);
+		}
+	}
 
-function sendVoiceMessage(chat_id, audioId) {
-	var token = BOT_TOKEN;
-	var url = 'https://api.telegram.org/bot' + token + "/sendVoice";
-	var file = DriveApp.getFileById(audioId);
-	var blob = file.getBlob();
-
-	var payload = {
-		"chat_id": chat_id,
-		"voice": blob
-	};
-
-	var options = {
-		'method': 'post',
-		'payload': payload
-	};
-	return UrlFetchApp.fetch(url, options);
-}
-
-function sendVoiceMessageByFileId(chat_id, audioFileId) {
-	var token = BOT_TOKEN;
-	var url = 'https://api.telegram.org/bot' + token + "/sendVoice";
-
-	var payload = {
-		"chat_id": chat_id,
-		"voice": encodeURI(audioFileId)
-	};
-
-	var options = {
-		'method': 'post',
-		'payload': payload
-	};
-
-	return UrlFetchApp.fetch(url, options);
+	trimRemindersFromSpreadsheet(REMINDER_SPREADSHEET_ID);
 }

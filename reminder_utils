@@ -1,0 +1,108 @@
+const SPREADSHEET_INDEX = {
+	DATETIME: 0,
+	CHAT_ID: 1,
+	REMINDER_TEXT: 2,
+	DONE: 3,
+};
+
+function addRemindersToSpreadsheet(datetime, chat_id, reminder_text, spreadsheet_id) {
+	var sheet = SpreadsheetApp.openById(spreadsheet_id).getSheets()[0];
+	var now = new Date();
+	datetime.setSeconds(0, 0);
+	if (now > datetime) {
+		return false;
+	}
+	sheet.appendRow([datetime, chat_id, reminder_text, false]);
+	return true;
+}
+
+function trimRemindersFromSpreadsheet(spreadsheet_id) {
+	// Remove doned reminders
+	var sheet = SpreadsheetApp.openById(spreadsheet_id).getSheets()[0];
+	var data = sheet.getDataRange().getValues();
+
+	// Start from the back cause if from front the index will be messed up
+	for (var i = data.length - 1; i >= 1; i--) {
+		if (data[i][SPREADSHEET_INDEX.DONE] == true) {
+			sheet.deleteRow(i + 1);
+		}
+	}
+}
+
+function getRemindersFromSpreadsheet(spreadsheet_id, chat_id) {
+	var sheet = SpreadsheetApp.openById(spreadsheet_id).getSheets()[0];
+	var data = sheet.getDataRange().getValues();
+
+	var message = "this is your reminders\n/unremind (index) to remove reminder\n\n";
+	var count = 0;
+
+	// Start from the back cause if from front the index will be messed up
+	for (var i = 1; i < data.length; i++) {
+		if (chat_id.toString() === data[i][SPREADSHEET_INDEX.CHAT_ID].toString()) {
+			message = message + `Reminder ID: ${i}\nTitle: ${data[i][SPREADSHEET_INDEX.REMINDER_TEXT]}\nDate: ${data[i][SPREADSHEET_INDEX.DATETIME]}`;
+			count++;
+			if (i < data.length - 1) {
+				message += '\n\n';
+			}
+		}
+	}
+	if (count == 0) return "no moar reminders for you";
+	return message;
+}
+
+function removeReminderFromSpreadsheet(spreadsheet_id, chat_id, index) {
+	// Index is follow spreadsheet one, use print info to get index
+	var sheet = SpreadsheetApp.openById(spreadsheet_id).getSheets()[0];
+	var data = sheet.getDataRange().getValues();
+	if (index > data.length - 1 || data[index][SPREADSHEET_INDEX.CHAT_ID] !== chat_id) {
+		return ".( ﾟдﾟ)つ something went wong cants dewete";
+	}
+	sheet.deleteRow(index + 1);
+	return "(>'-')7 wakarimashita it's deweted";
+}
+
+// Returns datetime and reminder text
+function parseReminderTimeMessage(text) {
+	// if in date format --> YYYYMMDD HHMM
+	// else in from now format --> ?d?h?m
+	var date_and_time_regex = /(\d{8}) (\d{4})\s+(.*)$/;
+	var datetime = null;
+	var reminder_text = null;
+
+	try {
+		if (date_and_time_regex.test(text)) {
+			var [_, year, month, day, hours, minutes, _reminder_text] = text.match(/(\d{4})(\d{2})(\d{2}) (\d{2})(\d{2})\s+(.*)$/);
+			reminder_text = _reminder_text;
+			datetime = new Date(`${year}-${month}-${day} ${hours}:${minutes}`);
+		}
+		else if (text.split(' ').length > 2) {
+			var days = text.split(' ')[1].match(/(\d+)\s*d/) ? parseInt(text.match(/(\d+)\s*d/)[1]) : 0;
+			var hours = text.split(' ')[1].match(/(\d+)\s*h/) ? parseInt(text.match(/(\d+)\s*h/)[1]) : 0;
+			var minutes = text.split(' ')[1].match(/(\d+)\s*m/) ? parseInt(text.match(/(\d+)\s*m/)[1]) : 0;
+			if (days == 0 && hours == 0 && minutes == 0) {
+				return [null, null];
+			}
+			reminder_text = text.split(' ').slice(2).join(' ');
+			datetime = new Date(new Date().getTime() + days * 60 * 60 * 24 * 1000 + hours * 60 * 60 * 1000 + minutes * 60 * 1000);
+		} else {
+			datetime = null;
+			reminder_text = null;
+		}
+		return [datetime, reminder_text];
+	} catch (e) {
+		return [null, null];
+	}
+}
+
+// Deals with deleting reminders
+function deleteReminder(spreadsheet_id, chat_id, text) {
+	var regex = /^\/unremind(?:\s+(\d+))?$/;
+	var match = text.match(regex);
+	var deleteReminderIndex = match[1] ? parseInt(match[1]) : null;
+	if (deleteReminderIndex !== null) {
+		return removeReminderFromSpreadsheet(spreadsheet_id, chat_id, deleteReminderIndex);
+	}
+	else {
+		return getRemindersFromSpreadsheet(spreadsheet_id, chat_id);
+	}
+}
