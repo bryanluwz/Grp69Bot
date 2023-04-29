@@ -79,6 +79,15 @@ function doPost(e) {
 		}
 	}
 
+	// Anon ducking
+	else if (isCommandInText(DONALD_DICK_COMMAND_PHRASE, text)) {
+		try {
+			var response = sendVoiceMessageByFileId(chat_id.toString(), DONALD_DICK_AUDIO_FILE_ID);
+		} catch (e) {
+			sendVoiceMessage(chat_id, DONALD_DICK_AUDIO_ID);
+		}
+	}
+
 	// Anon auughhhing
 	else if (isCommandInText(AUUGHHH_COMMAND_PHRASE, text)) {
 		try {
