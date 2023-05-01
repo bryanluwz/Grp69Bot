@@ -79,6 +79,15 @@ function doPost(e) {
 		}
 	}
 
+	// Anon auughhhing
+	else if (isCommandInText(AUUGHHH_COMMAND_PHRASE, text)) {
+		try {
+			var response = sendVoiceMessageByFileId(chat_id.toString(), AUUGHHH_AUDIO_FILE_ID);
+		} catch (e) {
+			sendVoiceMessage(chat_id, AUUGHHH_AUDIO_ID);
+		}
+	}
+
 	// Anon ducking
 	else if (isCommandInText(DONALD_DICK_COMMAND_PHRASE, text)) {
 		try {
@@ -88,12 +97,12 @@ function doPost(e) {
 		}
 	}
 
-	// Anon auughhhing
-	else if (isCommandInText(AUUGHHH_COMMAND_PHRASE, text)) {
+	// Anon hamiguaing
+	else if (isCommandInText(HAMIGUA_COMMAND_PHRASE, text)) {
 		try {
-			var response = sendVoiceMessageByFileId(chat_id.toString(), AUUGHHH_AUDIO_FILE_ID);
+			var response = sendVoiceMessageByFileId(chat_id.toString(), HAMIGUA_AUDIO_FILE_ID);
 		} catch (e) {
-			sendVoiceMessage(chat_id, AUUGHHH_AUDIO_ID);
+			sendVoiceMessage(chat_id, HAMIGUA_AUDIO_ID);
 		}
 	}
 
