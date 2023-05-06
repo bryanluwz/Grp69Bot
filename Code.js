@@ -106,6 +106,24 @@ function doPost(e) {
 		}
 	}
 
+	// Anon chilling
+	else if (isCommandInText(DADDY_CHILL_COMMAND_PHRASE, text)) {
+		try {
+			var response = sendVoiceMessageByFileId(chat_id.toString(), DADDY_CHILL_AUDIO_FILE_ID);
+		} catch (e) {
+			sendVoiceMessage(chat_id, DADDY_CHILL_AUDIO_ID);
+		}
+	}
+
+	// Anon heckin
+	else if (isCommandInText(WTH_COMMAND_PHRASE, text)) {
+		try {
+			var response = sendVoiceMessageByFileId(chat_id.toString(), WTH_AUDIO_FILE_ID);
+		} catch (e) {
+			sendVoiceMessage(chat_id, WTH_AUDIO_ID);
+		}
+	}
+
 	// Bible versing
 	else if (isCommandInText(RANDOM_BIBLE_VERSE_COMMAND_PHRASE, text)) {
 		var response = UrlFetchApp.fetch("https://labs.bible.org/api/?passage=random&type=json");
