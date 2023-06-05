@@ -13,10 +13,38 @@ function doPost(e) {
 	var text = data.message.text;
 
 	// Init / ping bot
-	if (text == '/start' || text == `@${BOT_USERNAME}`) {
+	if (text == '/start') {
 		sendMessage(chat_id, 'hewwo o(`•ω•)/ what you want');
 		return;
 	}
+
+	// chat bot testing
+	else if (text.match(new RegExp(`^@${BOT_USERNAME}\\s+(.*)`))) {
+		var query = text.match(new RegExp(`^@${BOT_USERNAME}\\s+(.+)`))[1];
+		var reply = null;
+
+		const payload = {
+			args: [query],
+			kwargs: {},
+			apiKey: GPT_TEXT_API_KEY,
+		};
+
+		var response = UrlFetchApp.fetch(`https://prometheus-api.llm.llc/api/workflow/${GPT_TEXT_WORKFLOW_ID}`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			payload: JSON.stringify(payload),
+		});
+
+		var result = JSON.parse(response.getContentText());
+
+		reply = result?.outputs[0];
+
+		sendMessage(chat_id, reply);
+		return;
+	}
+
 	else {
 		text = text.replace(`@${BOT_USERNAME}`, '');
 	}
